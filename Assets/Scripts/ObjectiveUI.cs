@@ -18,7 +18,8 @@ public class ObjectiveUI : MonoBehaviour
     {
         if (Application.isPlaying)
         {
-            EnsureObjectiveUI();
+            FindExistingUI();
+            ApplyObjectiveStyle();
             return;
         }
 
