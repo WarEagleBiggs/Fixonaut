@@ -1985,9 +1985,9 @@ MonoBehaviour:
   objectiveText: COMPLETE THE STATION TASKS
   textColor: {r: 0.5, g: 1, b: 0.65, a: 1}
   fontSize: 25
-  objectiveCanvas: {fileID: 0}
-  objectivePanel: {fileID: 0}
-  objectiveAccent: {fileID: 0}
+  objectiveCanvas: {fileID: 1595687195}
+  objectivePanel: {fileID: 308819118}
+  objectiveAccent: {fileID: 1797886812}
 --- !u!1001 &1882536241
 PrefabInstance:
   m_ObjectHideFlags: 0

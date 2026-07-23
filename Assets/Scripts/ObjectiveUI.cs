@@ -45,7 +45,9 @@ public class ObjectiveUI : MonoBehaviour
 #if UNITY_EDITOR
     private void EnsureEditorUI()
     {
-        if (this == null || Application.isPlaying)
+        if (this == null
+            || Application.isPlaying
+            || UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
             return;
 
         EnsureObjectiveUI();
@@ -74,7 +76,6 @@ public class ObjectiveUI : MonoBehaviour
             typeof(CanvasScaler),
             typeof(GraphicRaycaster));
 
-        canvasObject.transform.SetParent(transform, false);
         objectiveCanvas = canvasObject.GetComponent<Canvas>();
         objectiveCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         objectiveCanvas.sortingOrder = 80;
@@ -154,6 +155,22 @@ public class ObjectiveUI : MonoBehaviour
     private void FindExistingUI()
     {
         Transform existingCanvas = transform.Find("Objective UI");
+
+        if (existingCanvas == null)
+        {
+            Canvas[] sceneCanvases = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include);
+
+            foreach (Canvas sceneCanvas in sceneCanvases)
+            {
+                if (sceneCanvas.name == "Objective UI"
+                    && sceneCanvas.gameObject.scene == gameObject.scene)
+                {
+                    existingCanvas = sceneCanvas.transform;
+                    break;
+                }
+            }
+        }
+
         if (existingCanvas == null)
             return;
 
@@ -173,6 +190,13 @@ public class ObjectiveUI : MonoBehaviour
 
     private void ApplyObjectiveStyle()
     {
+        if (objectiveCanvas != null)
+        {
+            objectiveCanvas.transform.localPosition = Vector3.zero;
+            objectiveCanvas.transform.localRotation = Quaternion.identity;
+            objectiveCanvas.transform.localScale = Vector3.one;
+        }
+
         if (objectivePanel != null)
             objectivePanel.color = new Color(0.01f, 0.04f, 0.025f, 0.82f);
 
