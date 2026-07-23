@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
+[RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider), typeof(BatterySystem))]
+[RequireComponent(typeof(CrateInteraction))]
+[RequireComponent(typeof(ObjectiveUI), typeof(RechargeStation))]
 public class SimplePlayerController : MonoBehaviour
 {
     [Header("Movement")]
@@ -30,6 +32,38 @@ public class SimplePlayerController : MonoBehaviour
     private Quaternion smoothedCameraRotation;
     private TrailRenderer[] tireTracks;
 
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (Application.isPlaying)
+            return;
+
+        if (GetComponent<BatterySystem>() == null
+            || GetComponent<CrateInteraction>() == null
+            || GetComponent<ObjectiveUI>() == null
+            || GetComponent<RechargeStation>() == null)
+            UnityEditor.EditorApplication.delayCall += AddRequiredComponentsInEditor;
+    }
+
+    private void AddRequiredComponentsInEditor()
+    {
+        if (this == null)
+            return;
+
+        if (GetComponent<BatterySystem>() == null)
+            UnityEditor.Undo.AddComponent<BatterySystem>(gameObject);
+
+        if (GetComponent<CrateInteraction>() == null)
+            UnityEditor.Undo.AddComponent<CrateInteraction>(gameObject);
+
+        if (GetComponent<ObjectiveUI>() == null)
+            UnityEditor.Undo.AddComponent<ObjectiveUI>(gameObject);
+
+        if (GetComponent<RechargeStation>() == null)
+            UnityEditor.Undo.AddComponent<RechargeStation>(gameObject);
+    }
+#endif
+
     private void Awake()
     {
         playerRigidbody = GetComponent<Rigidbody>();
@@ -39,6 +73,18 @@ public class SimplePlayerController : MonoBehaviour
 
         if (GetComponent<CapsuleCollider>() == null)
             gameObject.AddComponent<CapsuleCollider>();
+
+        if (GetComponent<BatterySystem>() == null)
+            gameObject.AddComponent<BatterySystem>();
+
+        if (GetComponent<CrateInteraction>() == null)
+            gameObject.AddComponent<CrateInteraction>();
+
+        if (GetComponent<ObjectiveUI>() == null)
+            gameObject.AddComponent<ObjectiveUI>();
+
+        if (GetComponent<RechargeStation>() == null)
+            gameObject.AddComponent<RechargeStation>();
 
         CharacterController oldController = GetComponent<CharacterController>();
         if (oldController != null)
