@@ -17,10 +17,18 @@ public class SimplePlayerController : MonoBehaviour
     [SerializeField] private float cameraTurnLerpSpeed = 4f;
     [SerializeField] private float lookHeight = 1f;
 
+    [Header("Tire Tracks")]
+    [SerializeField] private float trackSpacing = 0.6f;
+    [SerializeField] private float trackWidth = 0.12f;
+    [SerializeField] private float trackGroundOffset = -0.98f;
+    [SerializeField] private float trackDuration = 30f;
+    [SerializeField] private Color trackColor = new Color(0.03f, 0.03f, 0.03f, 0.7f);
+
     private Rigidbody playerRigidbody;
     private Vector3 moveDirection;
     private Vector3 smoothedCameraTarget;
     private Quaternion smoothedCameraRotation;
+    private TrailRenderer[] tireTracks;
 
     private void Awake()
     {
@@ -44,6 +52,8 @@ public class SimplePlayerController : MonoBehaviour
 
         if (followCamera == null)
             followCamera = Camera.main;
+
+        CreateTireTracks();
     }
 
     private void Start()
@@ -84,6 +94,8 @@ public class SimplePlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
+        UpdateTireTracks();
+
         if (followCamera == null)
             return;
 
@@ -136,5 +148,54 @@ public class SimplePlayerController : MonoBehaviour
     private void LookCameraAtPlayer()
     {
         followCamera.transform.LookAt(transform.position + Vector3.up * lookHeight);
+    }
+
+    private void CreateTireTracks()
+    {
+        tireTracks = new TrailRenderer[2];
+
+        Shader trackShader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (trackShader == null)
+            trackShader = Shader.Find("Sprites/Default");
+
+        Material trackMaterial = new Material(trackShader);
+        trackMaterial.color = trackColor;
+
+        for (int i = 0; i < tireTracks.Length; i++)
+        {
+            GameObject trackObject = new GameObject(i == 0 ? "Left Tire Track" : "Right Tire Track");
+            trackObject.transform.SetParent(transform, false);
+
+            float side = i == 0 ? -1f : 1f;
+            trackObject.transform.localPosition = new Vector3(side * trackSpacing * 0.5f, trackGroundOffset, 0f);
+            trackObject.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+
+            TrailRenderer trail = trackObject.AddComponent<TrailRenderer>();
+            trail.sharedMaterial = trackMaterial;
+            trail.time = trackDuration;
+            trail.startWidth = trackWidth;
+            trail.endWidth = trackWidth;
+            trail.minVertexDistance = 0.05f;
+            trail.textureMode = LineTextureMode.Tile;
+            trail.alignment = LineAlignment.TransformZ;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.receiveShadows = false;
+            trail.emitting = false;
+
+            tireTracks[i] = trail;
+        }
+    }
+
+    private void UpdateTireTracks()
+    {
+        if (tireTracks == null)
+            return;
+
+        Vector3 horizontalVelocity = playerRigidbody.linearVelocity;
+        horizontalVelocity.y = 0f;
+        bool isMoving = horizontalVelocity.sqrMagnitude > 0.05f;
+
+        foreach (TrailRenderer trail in tireTracks)
+            trail.emitting = isMoving;
     }
 }
